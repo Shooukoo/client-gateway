@@ -9,9 +9,9 @@ import { options } from 'joi';
   imports:[ClientsModule.register([{
     name:PRODUCT_SERVICE,
     transport:Transport.TCP,
-    options:{
-      host:'localhost',
-      port:3001
+    options: {
+      host: 'localhost',
+      port: 3001,
     }
   }],)]
 })
