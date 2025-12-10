@@ -1,16 +1,12 @@
-import { Controller, Post, Get, Delete, Patch, Body, Inject, Query, ParseIntPipe } from '@nestjs/common';
-import { Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Patch, Body, Inject, Query, ParseIntPipe, Param } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { string } from 'joi';
 import { catchError, firstValueFrom } from 'rxjs';
-import { PaginationDto, RpcCustomExceptionFilter } from 'src/common';
+import { PaginationDto } from 'src/common';
 import { PRODUCT_SERVICE } from 'src/config';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { error } from 'console';
 
-
-@Controller()
+@Controller('products')
 export class ProductsController {
   constructor(
     @Inject(PRODUCT_SERVICE) private readonly productsClient: ClientProxy
@@ -26,18 +22,20 @@ export class ProductsController {
 
   @Get()
   findAll(@Query() paginationDto: PaginationDto){
+    // 2. CORRECCIÓN PATRÓN: Usar 'find_all_products'
     return this.productsClient.send(
-      {cmd : 'Find all products '},
+      { cmd : 'find_all_products' }, 
       paginationDto
     );
   }
 
   @Get(':id')
-  async findOne(@Param('id') id:String){
+  async findOne(@Param('id', ParseIntPipe) id: number){ // Es buena práctica validar que sea number aquí también
     try {
       const product = await firstValueFrom(
+        // 3. CORRECCIÓN PATRÓN: Usar 'find_one_product'
         this.productsClient.send(
-          {cmd: 'Find product'},
+          { cmd: 'find_one_product' },
           { id }
         )
       );
@@ -48,10 +46,10 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  delateProduct(@Param('id')id:string){
+  deleteProduct(@Param('id', ParseIntPipe) id: number){
     return this.productsClient.send(
-      {cmd: 'delete_product'},
-      {id}
+      { cmd: 'remove_product' },
+      { id }
     ).pipe(
       catchError(error => {
         throw new RpcException(error);
@@ -62,8 +60,8 @@ export class ProductsController {
   @Patch(':id')
   updateProduct(@Param('id', ParseIntPipe) id: number, @Body() updateProductDto: UpdateProductDto){
     return this.productsClient.send(
-      {cmd: 'update_product'},
-      {id, ...updateProductDto}
+      { cmd: 'update_product' },
+      { id, ...updateProductDto }
     ).pipe(
       catchError(error => {
         throw new RpcException(error);
