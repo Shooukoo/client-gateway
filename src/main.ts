@@ -17,11 +17,6 @@ async function bootstrap() {
     })
   )
 
-  app.enableCors({
-    origin: 'http://mi-pagina-web.com',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  });
-
   app.useGlobalFilters(new RpcCustomExceptionFilter());
 
   await app.listen(envs.port);
